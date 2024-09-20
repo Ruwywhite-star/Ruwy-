@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeSite</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <video autoplay muted loop id="bg-video">
+        <source src="c5e35a6e90dd01104a5d8eedb7c9773c.mp4" type="video/mp4">
+        Your browser does not support HTML5 video.
+    </video>
+
+    <header>
+        <div class="logo">
+            <h1>AnimeSite</h1>
+        </div>
+    </header>
+
+    <main>
+        <section class="search-bar">
+            <input type="text" id="search-input" placeholder="Search for an anime...">
+            <div id="loading" class="loading">Loading...</div>
+            <div id="search-results" class="search-results"></div>
+        </section>
+
+        <section class="latest-releases">
+            <h2>Latest Releases</h2>
+            <div class="anime-list" id="anime-list">
+                <!-- Anime items will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

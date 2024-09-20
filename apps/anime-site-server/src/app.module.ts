@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { SearchModule } from "./search/search.module";
 import { AnimeModule } from "./anime/anime.module";
+import { SearchModule } from "./search/search.module";
 import { LatestReleasesModule } from "./latestReleases/latestReleases.module";
 import { UserModule } from "./user/user.module";
 import { HealthModule } from "./health/health.module";
@@ -12,11 +12,16 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { GraphQLModule } from "@nestjs/graphql";
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
 
+import { ACLModule } from "./auth/acl.module";
+import { AuthModule } from "./auth/auth.module";
+
 @Module({
   controllers: [],
   imports: [
-    SearchModule,
+    ACLModule,
+    AuthModule,
     AnimeModule,
+    SearchModule,
     LatestReleasesModule,
     UserModule,
     HealthModule,

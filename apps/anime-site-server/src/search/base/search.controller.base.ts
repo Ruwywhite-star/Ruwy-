@@ -16,31 +16,61 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { SearchService } from "../search.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { SearchCreateInput } from "./SearchCreateInput";
 import { Search } from "./Search";
 import { SearchFindManyArgs } from "./SearchFindManyArgs";
 import { SearchWhereUniqueInput } from "./SearchWhereUniqueInput";
 import { SearchUpdateInput } from "./SearchUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class SearchControllerBase {
-  constructor(protected readonly service: SearchService) {}
+  constructor(
+    protected readonly service: SearchService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Search })
+  @nestAccessControl.UseRoles({
+    resource: "Search",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createSearch(@common.Body() data: SearchCreateInput): Promise<Search> {
     return await this.service.createSearch({
       data: data,
       select: {
         createdAt: true,
         id: true,
+        query: true,
+        result: true,
+        timestamp: true,
         updatedAt: true,
       },
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Search] })
   @ApiNestedQuery(SearchFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Search",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async searches(@common.Req() request: Request): Promise<Search[]> {
     const args = plainToClass(SearchFindManyArgs, request.query);
     return this.service.searches({
@@ -48,14 +78,26 @@ export class SearchControllerBase {
       select: {
         createdAt: true,
         id: true,
+        query: true,
+        result: true,
+        timestamp: true,
         updatedAt: true,
       },
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Search })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Search",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async search(
     @common.Param() params: SearchWhereUniqueInput
   ): Promise<Search | null> {
@@ -64,6 +106,9 @@ export class SearchControllerBase {
       select: {
         createdAt: true,
         id: true,
+        query: true,
+        result: true,
+        timestamp: true,
         updatedAt: true,
       },
     });
@@ -75,9 +120,18 @@ export class SearchControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Search })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Search",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateSearch(
     @common.Param() params: SearchWhereUniqueInput,
     @common.Body() data: SearchUpdateInput
@@ -89,6 +143,9 @@ export class SearchControllerBase {
         select: {
           createdAt: true,
           id: true,
+          query: true,
+          result: true,
+          timestamp: true,
           updatedAt: true,
         },
       });
@@ -105,6 +162,14 @@ export class SearchControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Search })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Search",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteSearch(
     @common.Param() params: SearchWhereUniqueInput
   ): Promise<Search | null> {
@@ -114,6 +179,9 @@ export class SearchControllerBase {
         select: {
           createdAt: true,
           id: true,
+          query: true,
+          result: true,
+          timestamp: true,
           updatedAt: true,
         },
       });

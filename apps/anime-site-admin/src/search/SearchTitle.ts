@@ -1,7 +1,7 @@
 import { Search as TSearch } from "../api/search/Search";
 
-export const SEARCH_TITLE_FIELD = "id";
+export const SEARCH_TITLE_FIELD = "query";
 
 export const SearchTitle = (record: TSearch): string => {
-  return record.id?.toString() || String(record.id);
+  return record.query?.toString() || String(record.id);
 };

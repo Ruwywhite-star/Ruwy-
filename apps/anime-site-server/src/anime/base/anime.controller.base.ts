@@ -16,46 +16,92 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { AnimeService } from "../anime.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { AnimeCreateInput } from "./AnimeCreateInput";
 import { Anime } from "./Anime";
 import { AnimeFindManyArgs } from "./AnimeFindManyArgs";
 import { AnimeWhereUniqueInput } from "./AnimeWhereUniqueInput";
 import { AnimeUpdateInput } from "./AnimeUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class AnimeControllerBase {
-  constructor(protected readonly service: AnimeService) {}
+  constructor(
+    protected readonly service: AnimeService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Anime })
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createAnime(@common.Body() data: AnimeCreateInput): Promise<Anime> {
     return await this.service.createAnime({
       data: data,
       select: {
         createdAt: true,
+        description: true,
+        genre: true,
         id: true,
+        rating: true,
+        releaseDate: true,
+        title: true,
         updatedAt: true,
       },
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Anime] })
   @ApiNestedQuery(AnimeFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async animeItems(@common.Req() request: Request): Promise<Anime[]> {
     const args = plainToClass(AnimeFindManyArgs, request.query);
     return this.service.animeItems({
       ...args,
       select: {
         createdAt: true,
+        description: true,
+        genre: true,
         id: true,
+        rating: true,
+        releaseDate: true,
+        title: true,
         updatedAt: true,
       },
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Anime })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async anime(
     @common.Param() params: AnimeWhereUniqueInput
   ): Promise<Anime | null> {
@@ -63,7 +109,12 @@ export class AnimeControllerBase {
       where: params,
       select: {
         createdAt: true,
+        description: true,
+        genre: true,
         id: true,
+        rating: true,
+        releaseDate: true,
+        title: true,
         updatedAt: true,
       },
     });
@@ -75,9 +126,18 @@ export class AnimeControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Anime })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateAnime(
     @common.Param() params: AnimeWhereUniqueInput,
     @common.Body() data: AnimeUpdateInput
@@ -88,7 +148,12 @@ export class AnimeControllerBase {
         data: data,
         select: {
           createdAt: true,
+          description: true,
+          genre: true,
           id: true,
+          rating: true,
+          releaseDate: true,
+          title: true,
           updatedAt: true,
         },
       });
@@ -105,6 +170,14 @@ export class AnimeControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Anime })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteAnime(
     @common.Param() params: AnimeWhereUniqueInput
   ): Promise<Anime | null> {
@@ -113,7 +186,12 @@ export class AnimeControllerBase {
         where: params,
         select: {
           createdAt: true,
+          description: true,
+          genre: true,
           id: true,
+          rating: true,
+          releaseDate: true,
+          title: true,
           updatedAt: true,
         },
       });

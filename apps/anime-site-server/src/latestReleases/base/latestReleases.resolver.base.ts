@@ -13,16 +13,34 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { LatestReleases } from "./LatestReleases";
 import { LatestReleasesCountArgs } from "./LatestReleasesCountArgs";
 import { LatestReleasesFindManyArgs } from "./LatestReleasesFindManyArgs";
 import { LatestReleasesFindUniqueArgs } from "./LatestReleasesFindUniqueArgs";
+import { CreateLatestReleasesArgs } from "./CreateLatestReleasesArgs";
+import { UpdateLatestReleasesArgs } from "./UpdateLatestReleasesArgs";
 import { DeleteLatestReleasesArgs } from "./DeleteLatestReleasesArgs";
 import { LatestReleasesService } from "../latestReleases.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => LatestReleases)
 export class LatestReleasesResolverBase {
-  constructor(protected readonly service: LatestReleasesService) {}
+  constructor(
+    protected readonly service: LatestReleasesService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "read",
+    possession: "any",
+  })
   async _latestReleasesItemsMeta(
     @graphql.Args() args: LatestReleasesCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +50,26 @@ export class LatestReleasesResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [LatestReleases])
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "read",
+    possession: "any",
+  })
   async latestReleasesItems(
     @graphql.Args() args: LatestReleasesFindManyArgs
   ): Promise<LatestReleases[]> {
     return this.service.latestReleasesItems(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => LatestReleases, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "read",
+    possession: "own",
+  })
   async latestReleases(
     @graphql.Args() args: LatestReleasesFindUniqueArgs
   ): Promise<LatestReleases | null> {
@@ -50,7 +80,53 @@ export class LatestReleasesResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => LatestReleases)
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "create",
+    possession: "any",
+  })
+  async createLatestReleases(
+    @graphql.Args() args: CreateLatestReleasesArgs
+  ): Promise<LatestReleases> {
+    return await this.service.createLatestReleases({
+      ...args,
+      data: args.data,
+    });
+  }
+
+  @common.UseInterceptors(AclValidateRequestInterceptor)
+  @graphql.Mutation(() => LatestReleases)
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "update",
+    possession: "any",
+  })
+  async updateLatestReleases(
+    @graphql.Args() args: UpdateLatestReleasesArgs
+  ): Promise<LatestReleases | null> {
+    try {
+      return await this.service.updateLatestReleases({
+        ...args,
+        data: args.data,
+      });
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        throw new GraphQLError(
+          `No resource was found for ${JSON.stringify(args.where)}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  @graphql.Mutation(() => LatestReleases)
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "delete",
+    possession: "any",
+  })
   async deleteLatestReleases(
     @graphql.Args() args: DeleteLatestReleasesArgs
   ): Promise<LatestReleases | null> {

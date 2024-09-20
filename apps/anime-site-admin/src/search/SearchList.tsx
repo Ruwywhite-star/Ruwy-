@@ -13,6 +13,9 @@ export const SearchList = (props: ListProps): React.ReactElement => {
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <DateField source="createdAt" label="Created At" />
         <TextField label="ID" source="id" />
+        <TextField label="query" source="query" />
+        <TextField label="result" source="result" />
+        <TextField label="timestamp" source="timestamp" />
         <DateField source="updatedAt" label="Updated At" />{" "}
       </Datagrid>
     </List>

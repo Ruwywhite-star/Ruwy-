@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { LatestReleasesService } from "../latestReleases.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { LatestReleasesCreateInput } from "./LatestReleasesCreateInput";
 import { LatestReleases } from "./LatestReleases";
 import { LatestReleasesFindManyArgs } from "./LatestReleasesFindManyArgs";
 import { LatestReleasesWhereUniqueInput } from "./LatestReleasesWhereUniqueInput";
 import { LatestReleasesUpdateInput } from "./LatestReleasesUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class LatestReleasesControllerBase {
-  constructor(protected readonly service: LatestReleasesService) {}
+  constructor(
+    protected readonly service: LatestReleasesService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: LatestReleases })
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createLatestReleases(
     @common.Body() data: LatestReleasesCreateInput
   ): Promise<LatestReleases> {
@@ -34,15 +52,27 @@ export class LatestReleasesControllerBase {
       data: data,
       select: {
         createdAt: true,
+        description: true,
         id: true,
+        releaseDate: true,
+        title: true,
         updatedAt: true,
       },
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [LatestReleases] })
   @ApiNestedQuery(LatestReleasesFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async latestReleasesItems(
     @common.Req() request: Request
   ): Promise<LatestReleases[]> {
@@ -51,15 +81,27 @@ export class LatestReleasesControllerBase {
       ...args,
       select: {
         createdAt: true,
+        description: true,
         id: true,
+        releaseDate: true,
+        title: true,
         updatedAt: true,
       },
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: LatestReleases })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async latestReleases(
     @common.Param() params: LatestReleasesWhereUniqueInput
   ): Promise<LatestReleases | null> {
@@ -67,7 +109,10 @@ export class LatestReleasesControllerBase {
       where: params,
       select: {
         createdAt: true,
+        description: true,
         id: true,
+        releaseDate: true,
+        title: true,
         updatedAt: true,
       },
     });
@@ -79,9 +124,18 @@ export class LatestReleasesControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: LatestReleases })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateLatestReleases(
     @common.Param() params: LatestReleasesWhereUniqueInput,
     @common.Body() data: LatestReleasesUpdateInput
@@ -92,7 +146,10 @@ export class LatestReleasesControllerBase {
         data: data,
         select: {
           createdAt: true,
+          description: true,
           id: true,
+          releaseDate: true,
+          title: true,
           updatedAt: true,
         },
       });
@@ -109,6 +166,14 @@ export class LatestReleasesControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: LatestReleases })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "LatestReleases",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteLatestReleases(
     @common.Param() params: LatestReleasesWhereUniqueInput
   ): Promise<LatestReleases | null> {
@@ -117,7 +182,10 @@ export class LatestReleasesControllerBase {
         where: params,
         select: {
           createdAt: true,
+          description: true,
           id: true,
+          releaseDate: true,
+          title: true,
           updatedAt: true,
         },
       });

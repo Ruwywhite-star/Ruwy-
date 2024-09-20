@@ -1,5 +1,11 @@
 import * as React from "react";
-import { Create, SimpleForm, CreateProps } from "react-admin";
+import {
+  Create,
+  SimpleForm,
+  CreateProps,
+  TextInput,
+  DateTimeInput,
+} from "react-admin";
 
 export const LatestReleasesCreate = (
   props: CreateProps
@@ -7,7 +13,9 @@ export const LatestReleasesCreate = (
   return (
     <Create {...props}>
       <SimpleForm>
-        <div />
+        <TextInput label="description" multiline source="description" />
+        <DateTimeInput label="releaseDate" source="releaseDate" />
+        <TextInput label="title" source="title" />
       </SimpleForm>
     </Create>
   );

@@ -13,16 +13,34 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { Anime } from "./Anime";
 import { AnimeCountArgs } from "./AnimeCountArgs";
 import { AnimeFindManyArgs } from "./AnimeFindManyArgs";
 import { AnimeFindUniqueArgs } from "./AnimeFindUniqueArgs";
+import { CreateAnimeArgs } from "./CreateAnimeArgs";
+import { UpdateAnimeArgs } from "./UpdateAnimeArgs";
 import { DeleteAnimeArgs } from "./DeleteAnimeArgs";
 import { AnimeService } from "../anime.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Anime)
 export class AnimeResolverBase {
-  constructor(protected readonly service: AnimeService) {}
+  constructor(
+    protected readonly service: AnimeService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "read",
+    possession: "any",
+  })
   async _animeItemsMeta(
     @graphql.Args() args: AnimeCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,12 +50,24 @@ export class AnimeResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Anime])
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "read",
+    possession: "any",
+  })
   async animeItems(@graphql.Args() args: AnimeFindManyArgs): Promise<Anime[]> {
     return this.service.animeItems(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Anime, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "read",
+    possession: "own",
+  })
   async anime(
     @graphql.Args() args: AnimeFindUniqueArgs
   ): Promise<Anime | null> {
@@ -48,7 +78,51 @@ export class AnimeResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => Anime)
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "create",
+    possession: "any",
+  })
+  async createAnime(@graphql.Args() args: CreateAnimeArgs): Promise<Anime> {
+    return await this.service.createAnime({
+      ...args,
+      data: args.data,
+    });
+  }
+
+  @common.UseInterceptors(AclValidateRequestInterceptor)
+  @graphql.Mutation(() => Anime)
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "update",
+    possession: "any",
+  })
+  async updateAnime(
+    @graphql.Args() args: UpdateAnimeArgs
+  ): Promise<Anime | null> {
+    try {
+      return await this.service.updateAnime({
+        ...args,
+        data: args.data,
+      });
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        throw new GraphQLError(
+          `No resource was found for ${JSON.stringify(args.where)}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  @graphql.Mutation(() => Anime)
+  @nestAccessControl.UseRoles({
+    resource: "Anime",
+    action: "delete",
+    possession: "any",
+  })
   async deleteAnime(
     @graphql.Args() args: DeleteAnimeArgs
   ): Promise<Anime | null> {

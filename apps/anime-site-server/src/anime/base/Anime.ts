@@ -11,8 +11,18 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { ObjectType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsString } from "class-validator";
+import {
+  IsDate,
+  IsString,
+  MaxLength,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  Min,
+  Max,
+} from "class-validator";
 import { Type } from "class-transformer";
+import { EnumAnimeGenre } from "./EnumAnimeGenre";
 
 @ObjectType()
 class Anime {
@@ -25,12 +35,71 @@ class Anime {
   createdAt!: Date;
 
   @ApiProperty({
+    required: false,
+    type: String,
+  })
+  @IsString()
+  @MaxLength(1000)
+  @IsOptional()
+  @Field(() => String, {
+    nullable: true,
+  })
+  description!: string | null;
+
+  @ApiProperty({
+    required: false,
+    enum: EnumAnimeGenre,
+  })
+  @IsEnum(EnumAnimeGenre)
+  @IsOptional()
+  @Field(() => EnumAnimeGenre, {
+    nullable: true,
+  })
+  genre?: "Option1" | null;
+
+  @ApiProperty({
     required: true,
     type: String,
   })
   @IsString()
   @Field(() => String)
   id!: string;
+
+  @ApiProperty({
+    required: false,
+    type: Number,
+  })
+  @IsNumber()
+  @Min(-999999999)
+  @Max(999999999)
+  @IsOptional()
+  @Field(() => Number, {
+    nullable: true,
+  })
+  rating!: number | null;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  @Field(() => Date, {
+    nullable: true,
+  })
+  releaseDate!: Date | null;
+
+  @ApiProperty({
+    required: false,
+    type: String,
+  })
+  @IsString()
+  @MaxLength(1000)
+  @IsOptional()
+  @Field(() => String, {
+    nullable: true,
+  })
+  title!: string | null;
 
   @ApiProperty({
     required: true,

@@ -7,22 +7,33 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Search {
-  createdAt DateTime @default(now())
-  id        String   @id @default(cuid())
-  updatedAt DateTime @updatedAt
+model Anime {
+  createdAt   DateTime        @default(now())
+  description String?
+  genre       EnumAnimeGenre?
+  id          String          @id @default(cuid())
+  rating      Float?
+  releaseDate DateTime?
+  title       String?
+  updatedAt   DateTime        @updatedAt
 }
 
-model Anime {
-  createdAt DateTime @default(now())
-  id        String   @id @default(cuid())
-  updatedAt DateTime @updatedAt
+model Search {
+  createdAt DateTime  @default(now())
+  id        String    @id @default(cuid())
+  query     String?
+  result    Json?
+  timestamp DateTime?
+  updatedAt DateTime  @updatedAt
 }
 
 model LatestReleases {
-  createdAt DateTime @default(now())
-  id        String   @id @default(cuid())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  description String?
+  id          String    @id @default(cuid())
+  releaseDate DateTime?
+  title       String?
+  updatedAt   DateTime  @updatedAt
 }
 
 model User {
@@ -35,4 +46,8 @@ model User {
   roles     Json
   updatedAt DateTime @updatedAt
   username  String   @unique
+}
+
+enum EnumAnimeGenre {
+  Option1
 }

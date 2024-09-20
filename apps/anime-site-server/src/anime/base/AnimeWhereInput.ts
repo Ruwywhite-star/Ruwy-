@@ -11,12 +11,38 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { InputType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { StringFilter } from "../../util/StringFilter";
+import { StringNullableFilter } from "../../util/StringNullableFilter";
 import { Type } from "class-transformer";
-import { IsOptional } from "class-validator";
+import { IsOptional, IsEnum } from "class-validator";
+import { EnumAnimeGenre } from "./EnumAnimeGenre";
+import { StringFilter } from "../../util/StringFilter";
+import { FloatNullableFilter } from "../../util/FloatNullableFilter";
+import { DateTimeNullableFilter } from "../../util/DateTimeNullableFilter";
 
 @InputType()
 class AnimeWhereInput {
+  @ApiProperty({
+    required: false,
+    type: StringNullableFilter,
+  })
+  @Type(() => StringNullableFilter)
+  @IsOptional()
+  @Field(() => StringNullableFilter, {
+    nullable: true,
+  })
+  description?: StringNullableFilter;
+
+  @ApiProperty({
+    required: false,
+    enum: EnumAnimeGenre,
+  })
+  @IsEnum(EnumAnimeGenre)
+  @IsOptional()
+  @Field(() => EnumAnimeGenre, {
+    nullable: true,
+  })
+  genre?: "Option1";
+
   @ApiProperty({
     required: false,
     type: StringFilter,
@@ -27,6 +53,39 @@ class AnimeWhereInput {
     nullable: true,
   })
   id?: StringFilter;
+
+  @ApiProperty({
+    required: false,
+    type: FloatNullableFilter,
+  })
+  @Type(() => FloatNullableFilter)
+  @IsOptional()
+  @Field(() => FloatNullableFilter, {
+    nullable: true,
+  })
+  rating?: FloatNullableFilter;
+
+  @ApiProperty({
+    required: false,
+    type: DateTimeNullableFilter,
+  })
+  @Type(() => DateTimeNullableFilter)
+  @IsOptional()
+  @Field(() => DateTimeNullableFilter, {
+    nullable: true,
+  })
+  releaseDate?: DateTimeNullableFilter;
+
+  @ApiProperty({
+    required: false,
+    type: StringNullableFilter,
+  })
+  @Type(() => StringNullableFilter)
+  @IsOptional()
+  @Field(() => StringNullableFilter, {
+    nullable: true,
+  })
+  title?: StringNullableFilter;
 }
 
 export { AnimeWhereInput as AnimeWhereInput };

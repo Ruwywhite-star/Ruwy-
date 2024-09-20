@@ -12,7 +12,10 @@ export const LatestReleasesList = (props: ListProps): React.ReactElement => {
     >
       <Datagrid rowClick="show" bulkActionButtons={false}>
         <DateField source="createdAt" label="Created At" />
+        <TextField label="description" source="description" />
         <TextField label="ID" source="id" />
+        <TextField label="releaseDate" source="releaseDate" />
+        <TextField label="title" source="title" />
         <DateField source="updatedAt" label="Updated At" />{" "}
       </Datagrid>
     </List>

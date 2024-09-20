@@ -1,7 +1,7 @@
 import { LatestReleases as TLatestReleases } from "../api/latestReleases/LatestReleases";
 
-export const LATESTRELEASES_TITLE_FIELD = "id";
+export const LATESTRELEASES_TITLE_FIELD = "title";
 
 export const LatestReleasesTitle = (record: TLatestReleases): string => {
-  return record.id?.toString() || String(record.id);
+  return record.title?.toString() || String(record.id);
 };
